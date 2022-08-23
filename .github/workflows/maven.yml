@@ -36,6 +36,7 @@ jobs:
       run: docker build . -t index.docker.io/maxiplux/coreapi2022
     - name: Docker Push
       run: docker push index.docker.io/maxiplux/coreapi2022
+
     #- name: docker-build
     #  run: mvn boost:docker-build --file pom.xml
     #- name: docker-push
