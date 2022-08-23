@@ -1,7 +1,12 @@
-FROM gradle:jdk11 AS build
-COPY --chown=gradle:gradle . /home/gradle/src
-WORKDIR /home/gradle/src
-RUN gradle build --exclude-task test  --no-daemon  --exclude-task test
+FROM maven:3.5-jdk-11 AS build
+
+
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+
+RUN mvn -f /usr/src/app/pom.xml clean package -DskipTests=true
+
+
 
 FROM openjdk:11-jre-slim
 
@@ -9,7 +14,7 @@ EXPOSE 8080
 
 RUN mkdir /app
 
-COPY --from=build /home/gradle/src/build/libs/spring-base2022-0.0.1-SNAPSHOT.jar /app/spring-boot-application.jar
+COPY --from=build /usr/src/app/target/spring-base2022-0.0.1-SNAPSHOT.jar /app/spring-boot-application.jar
 
 ENTRYPOINT ["java",  "-Djava.security.egd=file:/dev/./urandom","-jar","/app/spring-boot-application.jar"]
 
