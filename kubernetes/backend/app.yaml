@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: testing
+  annotations:
+
+    #dev.okteto.com/auto-ingress: "true"
+    # Note that the backend talks over HTTP.
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    # TODO: Fill in with the ARN of your certificate.
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 	arn:aws:acm:us-east-2:745680603558:certificate/76319251-65e6-4d84-885c-8e8258e88446
+    # Only run SSL on the port named "https" below.
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+
+spec:
+  type: LoadBalancer
+  #type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: 8080
+  selector:
+    app: backend
+    run: backend
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: testing
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      run: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        run: backend
+    spec:
+      containers:
+        - image: maxiplux/livemarket.business.b2bcart:kuerbernetes
+          name: backend
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/liveness
+              port: 443
+            timeoutSeconds: 60
+            initialDelaySeconds: 120
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/db
+              port: 443
+            timeoutSeconds: 120
+            initialDelaySeconds: 120

@@ -1,0 +1,120 @@
+kubectl -n testing create -f app-configmap.yaml
+kubectl -n testing create -f app.yaml
+kubectl -n testing create -f app-hpa.yaml
+
+
+kubectl -n testing  autoscale deployment backend --cpu-percent=50 --min=1 --max=20
+
+kubectl -n testing apply -f https://k8s.io/examples/application/php-apache.yaml
+
+kubectl -n testing run -it --rm load-generator --image=busybox /bin/sh
+
+while true; do wget -q -O- http://backend; done
+
+
+
+
+kubectl -n testing delete service backend
+kubectl -n testing delete deployment backend
+kubectl -n testing delete hpa  backend
+
+kubectl -n testing delete hpa,service,deployment backend
+
+
+kubectl -n testing get  hpa backend
+
+
+
+install metric server
+
+kubectl delete configmap app-configmap.yaml
+kubectl delete configmap
+
+kubectl exec -it  pod/backend-584dcc5986-x8w85 bash
+kubectl -n testing -it  exec pod/backend-5b65454644-q9mnq bash
+
+kubectl -n testing scale deployment backend --replicas=20
+
+
+kubectl -n testing describe hpa backend
+kubectl get all
+kubectl -n testing get pod,hpa
+kubectl -n testing delete hpa backend
+
+aws eks list-clusters
+
+
+eksctl create cluster --name maxiplux-cluster --nodegroup-name maxiplux-may-cluster-node-group  --node-type t2.medium --nodes 3 --nodes-min 3 --nodes-max 7 --managed --asg-access
+
+eksctl scale nodegroup --cluster test-1  --name ng-1 --nodes 4
+eksctl scale nodegroup --cluster <cluster name> --name <nodegroup name> --nodes <new desired capacity>?
+
+kubectl -n testing get services
+
+
+Amazon Elastic Kubernetes Service
+
+eksctl create cluster \
+  --name simon-head \
+  --region eu-west-2 \
+  --version 1.14 \
+  --nodegroup-name standard-workers \
+  --node-type t3.medium \
+  --nodes 3 \
+  --nodes-min 3 \
+  --nodes-max 3
+
+
+Azure Kubernetes Service
+# Create the resource group
+az group create \
+    --name simon-heads-stuff \
+    --location uksouth
+
+# Create the cluster
+az aks create \
+    --resource-group simon-heads-stuff \
+    --name myAKSCluster \
+    --kubernetes-version 1.14.8 \
+    --generate-ssh-keys \
+    --node-count 3 \
+    --node-vm-size Standard_B2ms \
+    --location uksouth \
+    --attach-acr simonheadapp
+
+
+
+Google Kubernetes Engine
+
+# this is one node per zone (3 nodes in total)
+gcloud container clusters create simon-head \
+  --cluster-version=1.15.9-gke.9 \
+  --machine-type=n1-standard-2 \
+  --region=europe-west2 \
+  --num-nodes=1
+  --scopes=bigquery,storage-rw,compute-ro
+aws config
+-
+-
+-
+for aws
+create user that belong to group AdministratorAccess
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+
+eksctl create cluster --zones=us-east-1a,us-east-1b,us-east-1d --name maxiplux-cluster --nodegroup-name maxiplux-cluster-node-group  --node-type t3a.small --nodes 3 --nodes-min 3 --nodes-max 7 --managed --asg-access
+
+eksctl delete cluster --name  maxiplux-cluster
+
+
+
+
+
+firts
+kubectl create -f kube-state-metrics/examples/standard/
+
+fix bug on metrics server
+kubectl -n kube-system edit deploy metrics-server
+
+        - --logtostderr
+        - --kubelet-insecure-tls=true
+        - --kubelet-preferred-address-types=InternalDNS,InternalIP,ExternalDNS,ExternalIP,Hostname
